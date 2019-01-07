@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  * @author: genx
  * @date: 2018/9/6 17:28
  */
-public class TradeDetailMsg implements ISocketMsg {
+public class TradeDetailMsg extends SocketMsg {
 
     /**
      * 交易所
