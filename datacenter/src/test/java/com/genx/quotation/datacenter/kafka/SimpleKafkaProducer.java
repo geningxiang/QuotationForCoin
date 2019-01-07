@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -27,7 +29,7 @@ public class SimpleKafkaProducer {
     }
 
     public void produce() {
-
+    Logger logger = LoggerFactory.getLogger(getClass());
         String[] symbols = new String[]{"10004-btcusdt", "10004-ethbtc", "10004-bchbtc"};
 
         JSONObject item;
@@ -37,6 +39,7 @@ public class SimpleKafkaProducer {
             item.put("price", new BigDecimal(Math.random()));
             item.put("amount", new BigDecimal(Math.random()));
             item.put("time", System.currentTimeMillis());
+            logger.info(item.toJSONString());
             producer.send(new ProducerRecord<>(TOPIC, "1", item.toJSONString()));
 
             try {

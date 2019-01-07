@@ -33,6 +33,8 @@ import java.util.Properties;
 public class StreamingStoreTest {
     public static void main(String[] args) throws Exception {
         Logger logger = LoggerFactory.getLogger(StreamingStoreTest.class);
+
+        logger.info("start");
 //        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 
