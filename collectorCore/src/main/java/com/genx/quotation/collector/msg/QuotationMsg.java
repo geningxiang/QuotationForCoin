@@ -1,4 +1,4 @@
-package com.genx.quotation.collector.socket.msg;
+package com.genx.quotation.collector.msg;
 
 import com.alibaba.fastjson.JSON;
 
@@ -9,8 +9,8 @@ import com.alibaba.fastjson.JSON;
  * @author: genx
  * @date: 2019/1/7 23:50
  */
-public abstract class SocketMsg {
-    abstract String getType();
+public abstract class QuotationMsg {
+    public abstract String getType();
 
     @Override
     public String toString() {

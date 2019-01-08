@@ -1,5 +1,9 @@
 package com.genx.quotation.collector.handler;
 
+import com.genx.quotation.collector.msg.QuotationMsg;
+
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * Description:
@@ -11,6 +15,7 @@ public class QuotationEventWork implements Runnable {
     private IDataHandler dataHandler;
     private Object data;
 
+
     public <T> QuotationEventWork(IDataHandler dataHandler, T data) {
         this.dataHandler = dataHandler;
         this.data = data;
@@ -18,10 +23,13 @@ public class QuotationEventWork implements Runnable {
 
     @Override
     public void run() {
-        if (dataHandler != null && data != null) {
-            try{
-                dataHandler.onHandle(data);
-            }catch (Exception e) {
+        if (dataHandler != null && data != null && QuotationSinkFactory.getInstance() != null) {
+            try {
+                List<QuotationMsg> list = dataHandler.onHandle(data);
+                if (list != null && list.size() > 0) {
+                    QuotationSinkFactory.getInstance().invoke(list);
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

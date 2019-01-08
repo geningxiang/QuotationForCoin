@@ -1,6 +1,7 @@
 package com.genx.quotation.collector.handler;
 
 import com.genx.quotation.collector.msg.QuotationMsg;
+
 import java.util.List;
 
 /**
@@ -8,9 +9,11 @@ import java.util.List;
  * Description:
  *
  * @author: genx
- * @date: 2019/1/7 22:58
+ * @date: 2019/1/8 20:39
  */
-public interface IDataHandler {
+public interface IQuotationSink {
 
-    List<QuotationMsg> onHandle(Object object);
+    default void invoke(List<QuotationMsg> list) {
+
+    }
 }

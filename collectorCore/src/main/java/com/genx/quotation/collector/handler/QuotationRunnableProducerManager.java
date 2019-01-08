@@ -33,6 +33,7 @@ public class QuotationRunnableProducerManager {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             if (!e.isShutdown()) {
+                //队列满的时候 移除 1000个
                 e.getQueue().drainTo(new ArrayBlockingQueue(REMOVE_SIZE), REMOVE_SIZE);
                 e.execute(r);
             }

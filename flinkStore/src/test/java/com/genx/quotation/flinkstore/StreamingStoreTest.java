@@ -21,6 +21,7 @@ import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -59,6 +60,7 @@ public class StreamingStoreTest {
             }
         });
 
+
         KeyedStream<JSONObject, String> keyedStream = jsonStream
                 .keyBy(new KeySelector<JSONObject, String>() {
                     @Override
@@ -67,30 +69,30 @@ public class StreamingStoreTest {
                     }
                 });
 
-        DataStream<JSONObject> result = keyedStream
-                .flatMap(new RichFlatMapFunction<JSONObject, JSONObject>() {
+        SingleOutputStreamOperator<Tuple2<String, Integer>> result = keyedStream
+                .flatMap(new RichFlatMapFunction<JSONObject, Tuple2<String, Integer>>() {
                     private transient ValueState<JSONObject> modelState;
 
                     @Override
-                    public void flatMap(JSONObject data, Collector<JSONObject> out) throws Exception {
+                    public void flatMap(JSONObject data, Collector<Tuple2<String, Integer>> out) throws Exception {
 //                        logger.info(data.toJSONString());
                         if(modelState.value() == null){
-                            modelState.update(data);
-                        } else if(data.getLongValue("time") - modelState.value().getLongValue("time") > 10000){
-                            out.collect(modelState.value());
+                            data.put("count", 1);
                             modelState.update(data);
                         } else {
-
+                            int count = modelState.value().getIntValue("count");
+                            data.put("count", count + 1);
+                            modelState.update(data);
                         }
-
+                        out.collect(new Tuple2(data.getString("symbol"), modelState.value().getIntValue("count")));
                     }
 
                     @Override
                     public void open(Configuration config) {
                         ValueStateDescriptor<JSONObject> descriptor =
-                                new ValueStateDescriptor<>(
+                                new ValueStateDescriptor(
                                         // state name
-                                        "regressionModel",
+                                        "symbolCount",
                                         // type information of state
                                         TypeInformation.of(JSONObject.class));
                         modelState = getRuntimeContext().getState(descriptor);

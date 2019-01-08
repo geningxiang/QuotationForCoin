@@ -1,4 +1,4 @@
-package com.genx.quotation.collector.socket.msg;
+package com.genx.quotation.collector.msg;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  * @author: genx
  * @date: 2018/9/6 17:28
  */
-public class TradeDetailMsg extends SocketMsg {
+public class TradeDetailMsg extends QuotationMsg {
 
     /**
      * 交易所

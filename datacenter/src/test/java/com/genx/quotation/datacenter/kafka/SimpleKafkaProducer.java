@@ -40,7 +40,7 @@ public class SimpleKafkaProducer {
             item.put("amount", new BigDecimal(Math.random()));
             item.put("time", System.currentTimeMillis());
             logger.info(item.toJSONString());
-            producer.send(new ProducerRecord<>(TOPIC, "1", item.toJSONString()));
+            producer.send(new ProducerRecord<>(TOPIC, item.toJSONString()));
 
             try {
                 Thread.sleep(3000);

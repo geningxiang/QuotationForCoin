@@ -21,15 +21,15 @@ public class WebSocketHandler extends WebSocketListener {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private final String name;
-    private ICaimaoSocketListener caimaoSocketListener = null;
+    private final ICaimaoSocketListener caimaoSocketListener;
 
 
     /**
      * 实时处理数据
      * @param caimaoSocketListener
      */
-    public WebSocketHandler(String name, ICaimaoSocketListener caimaoSocketListener) {
-        this.name = name;
+    public WebSocketHandler(ICaimaoSocketListener caimaoSocketListener) {
+        this.name = caimaoSocketListener.collectorName();
         this.caimaoSocketListener = caimaoSocketListener;
     }
 
