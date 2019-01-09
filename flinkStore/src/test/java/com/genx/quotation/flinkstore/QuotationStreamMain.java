@@ -3,6 +3,7 @@ package com.genx.quotation.flinkstore;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.genx.quotation.flinkstore.sink.MongoDbSink;
 import com.genx.quotation.flinkstore.vo.QuotationKlineItem;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
@@ -107,7 +108,7 @@ public class QuotationStreamMain {
                     }
                 });
 
-        result.print();
+        result.addSink(new MongoDbSink());
 
         // run the prediction pipeline
         env.execute("QuotationStreamMain");

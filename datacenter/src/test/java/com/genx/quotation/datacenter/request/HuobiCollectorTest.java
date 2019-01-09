@@ -8,7 +8,10 @@ import com.genx.quotation.collector.msg.QuotationMsg;
 import com.genx.quotation.collector.msg.TradeDetailMsg;
 import com.genx.quotation.collector.request.ICaimaoSocketListener;
 import com.genx.quotation.collector.request.WebSocketHandler;
+import com.genx.quotation.collector.request.huobi.HuobiSocketListener;
 import com.genx.quotation.collector.socket.SocketEventType;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -19,6 +22,8 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Properties;
 
@@ -56,33 +61,6 @@ public class HuobiCollectorTest {
             @Override
             public void invoke(List<QuotationMsg> list) {
                 for (QuotationMsg quotationMsg : list) {
-
-//                    System.out.println("【"+quotationMsg);
-
-//                    if(quotationMsg instanceof TradeDetailMsg){
-//                        TradeDetailMsg data = (TradeDetailMsg) quotationMsg;
-//                        JSONObject item;
-//                        for (int i = 0; i < data.getData().size(); i++) {
-//                            item = data.getData().getJSONObject(i);
-//
-//                            int m = (int )(item.getLongValue("t") / 60000);
-//                            if(m > minute) {
-//                                minute = m;
-//                                count1 = 0;
-//                                count2 = 0;
-//                            }
-//                            if(i == 0){
-//                                count1++;
-//                            }
-//                            count2++;
-//
-//                            System.out.println(minute * 60 + " " + count1 + " " + count2);
-//
-////                            System.out.println(FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(item.getLongValue("t"))
-////                            + " " + item.getBigDecimal("p").toPlainString() + " " + item.getBigDecimal("a").toPlainString());
-//                        }
-//                    }
-
                     if(SocketEventType.TRADE_DETAIL.name().equals(quotationMsg.getType())){
                         producer.send(new ProducerRecord(topic, quotationMsg.toString()));
                     }
@@ -90,11 +68,16 @@ public class HuobiCollectorTest {
             }
         });
 
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine engine = sem.getEngineByName("nashorn");
-        engine.eval(new FileReader("D:\\idea-workspace\\QuotationForCoin\\datacenter\\src\\main\\resources\\engineimpl/huobiTradeDetail.js"));
-        Invocable invokeEngine = (Invocable) engine;
-        ICaimaoSocketListener l = invokeEngine.getInterface(ICaimaoSocketListener.class);
+//        ScriptEngineManager sem = new ScriptEngineManager();
+//        ScriptEngine engine = sem.getEngineByName("nashorn");
+//
+//        InputStream in = HuobiCollectorTest.class.getClassLoader().getResourceAsStream("engineimpl/huobiTradeDetail.js");
+//        engine.eval(new InputStreamReader(in));
+//        Invocable invokeEngine = (Invocable) engine;
+//        ICaimaoSocketListener l = invokeEngine.getInterface(ICaimaoSocketListener.class);
+
+        ICaimaoSocketListener l = new HuobiSocketListener();
+
         WebSocketHandler huobiWebSocketHandler = new WebSocketHandler(l);
         huobiWebSocketHandler.start();
 

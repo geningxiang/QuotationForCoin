@@ -13,10 +13,10 @@ var getSocketUrl = function () {
 };
 
 var onOpen = function (webSocket, response) {
-    // webSocket.send('{"sub": "market.ethbtc.trade.detail"}');
-    //
-    // webSocket.send('{"sub": "market.btcusdt.trade.detail"}');
-    // webSocket.send('{"sub": "market.ethusdt.trade.detail"}');
+
+    webSocket.send('{"sub": "market.btcusdt.trade.detail"}');
+
+    webSocket.send('{"sub": "market.ethusdt.trade.detail"}');
     webSocket.send('{"sub": "market.xrpusdt.trade.detail"}');
 
     // webSocket.send('{"sub": "market.bchusdt.trade.detail"}');
