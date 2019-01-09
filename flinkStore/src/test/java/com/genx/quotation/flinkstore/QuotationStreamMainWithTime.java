@@ -5,26 +5,36 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.genx.quotation.flinkstore.sink.MongoDbSink;
 import com.genx.quotation.flinkstore.vo.QuotationKlineItem;
+import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple5;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks;
+import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
+import org.apache.flink.streaming.api.watermark.Watermark;
+import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
+import org.apache.flink.streaming.api.windowing.triggers.EventTimeTrigger;
+import org.apache.flink.streaming.api.windowing.triggers.Trigger;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.util.Collector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -34,7 +44,7 @@ import java.util.Properties;
  * @author: genx
  * @date: 2019/1/8 22:30
  */
-public class QuotationStreamMain {
+public class QuotationStreamMainWithTime {
     public static void main(String[] args) throws Exception {
 //        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -72,40 +82,61 @@ public class QuotationStreamMain {
                 .keyBy(0, 1);
 
 
-        SingleOutputStreamOperator<QuotationKlineItem> result = keyedStream
-                .flatMap(new RichFlatMapFunction<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>, QuotationKlineItem>() {
-
-                    private transient ValueState<QuotationKlineItem> modelState;
+        DataStream<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>> withTimestampsAndWatermarks = keyedStream
+                .assignTimestampsAndWatermarks(new AssignerWithPeriodicWatermarks<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>>(){
 
                     @Override
-                    public void flatMap(Tuple5<Integer, String, Long, BigDecimal, BigDecimal> data, Collector<QuotationKlineItem> out) throws IOException {
-                        if (modelState.value() == null) {
-                            modelState.update(new QuotationKlineItem(data.f0, data.f1, data.f2, data.f3, data.f4));
-                        } else {
-                            int minute = (int) (data.f2 / 60000);
-                            if (minute < modelState.value().getMinute()) {
-
-                            } else if (minute == modelState.value().getMinute()) {
-                                //分钟内的更新
-                                modelState.value().update(data.f3, data.f4);
-                            } else {
-                                out.collect(modelState.value());
-
-                                modelState.update(new QuotationKlineItem(data.f0, data.f1, data.f2, data.f3, data.f4));
-                            }
-                        }
+                    public long extractTimestamp(Tuple5<Integer, String, Long, BigDecimal, BigDecimal> o, long l) {
+                        return 0;
                     }
+
+                    @Nullable
                     @Override
-                    public void open(Configuration config) {
-                        ValueStateDescriptor<QuotationKlineItem> descriptor =
-                                new ValueStateDescriptor(
-                                        "quotationKline",
-                                        TypeInformation.of(QuotationKlineItem.class));
-                        modelState = getRuntimeContext().getState(descriptor);
+                    public Watermark getCurrentWatermark() {
+                        return null;
                     }
                 });
 
-        result.addSink(new MongoDbSink());
+        DataStream<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>> withTimestampsAndWatermarks1 = keyedStream
+                .assignTimestampsAndWatermarks(new AssignerWithPunctuatedWatermarks<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>>(){
+
+                    @Override
+                    public long extractTimestamp(Tuple5<Integer, String, Long, BigDecimal, BigDecimal> integerStringLongBigDecimalBigDecimalTuple5, long l) {
+                        return 0;
+                    }
+
+                    @Nullable
+                    @Override
+                    public Watermark checkAndGetNextWatermark(Tuple5<Integer, String, Long, BigDecimal, BigDecimal> integerStringLongBigDecimalBigDecimalTuple5, long l) {
+                        return null;
+                    }
+                });
+
+//        keyedStream.timeWindow()
+
+        //扩展WindowAssigner类来实现自定义窗口分配器
+        keyedStream.window(new WindowAssigner<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>, TimeWindow>(){
+
+            @Override
+            public Collection<TimeWindow> assignWindows(Tuple5<Integer, String, Long, BigDecimal, BigDecimal> o, long l, WindowAssignerContext windowAssignerContext) {
+                return null;
+            }
+
+            @Override
+            public Trigger<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>, TimeWindow> getDefaultTrigger(StreamExecutionEnvironment streamExecutionEnvironment) {
+                return null;
+            }
+
+            @Override
+            public TypeSerializer getWindowSerializer(ExecutionConfig executionConfig) {
+                return null;
+            }
+
+            @Override
+            public boolean isEventTime() {
+                return true;
+            }
+        });
 
         // run the prediction pipeline
         env.execute("QuotationStreamMain");
