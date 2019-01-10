@@ -46,7 +46,7 @@ public class HuobiSocketListener implements ICaimaoSocketListener {
     public void onOpen(WebSocket webSocket, Response response) {
         webSocket.send("{\"sub\": \"market.btcusdt.trade.detail\"}");
         webSocket.send("{\"sub\": \"market.ethusdt.trade.detail\"}");
-        webSocket.send("{\"sub\": \"market.xrpusdt.trade.detail\"}");
+//        webSocket.send("{\"sub\": \"market.xrpusdt.trade.detail\"}");
     }
 
     @Override
@@ -76,14 +76,14 @@ public class HuobiSocketListener implements ICaimaoSocketListener {
                 TradeDetailMsg msg = new TradeDetailMsg(10004, symbol, d.size());
                 JSONObject item;
                 BigInteger lastId = this.idMap.get(symbol);
-                System.out.println(data);
+//                System.out.println(data);
                 for (int i = 0; i < d.size(); i++) {
                     item = d.getJSONObject(i);
 
                     BigInteger id = item.getBigInteger("id");
-                    System.out.println(((int)(item.getLongValue("ts") / 60000) * 60) + " , " + id);
+//                    System.out.println(((int)(item.getLongValue("ts") / 60000) * 60) + " , " + id);
                     if(lastId != null && lastId.compareTo(id) > 0){
-                        System.out.println("【忽略】" + id);
+//                        System.out.println("【忽略】" + id);
                         //忽略
                         continue;
                     }

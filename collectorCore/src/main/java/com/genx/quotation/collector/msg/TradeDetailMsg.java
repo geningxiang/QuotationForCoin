@@ -3,6 +3,7 @@ package com.genx.quotation.collector.msg;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.genx.quotation.collector.socket.SocketEventType;
+import org.apache.commons.lang3.time.FastDateFormat;
 
 import java.math.BigDecimal;
 
@@ -57,6 +58,10 @@ public class TradeDetailMsg extends QuotationMsg {
         JSONObject item = new JSONObject();
         //交易时间戳 毫秒
         item.put("t", timeMillis);
+
+        //TODO
+        item.put("time", FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(timeMillis));
+
         //成交量
         item.put("a", amonut);
         //成交价

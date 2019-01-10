@@ -1,6 +1,7 @@
 package com.genx.quotation.datacenter.request;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.genx.quotation.collector.handler.IQuotationSink;
 import com.genx.quotation.collector.handler.QuotationSinkFactory;
@@ -62,6 +63,7 @@ public class HuobiCollectorTest {
             public void invoke(List<QuotationMsg> list) {
                 for (QuotationMsg quotationMsg : list) {
                     if(SocketEventType.TRADE_DETAIL.name().equals(quotationMsg.getType())){
+                        System.out.println(quotationMsg.toString());
                         producer.send(new ProducerRecord(topic, quotationMsg.toString()));
                     }
                 }
