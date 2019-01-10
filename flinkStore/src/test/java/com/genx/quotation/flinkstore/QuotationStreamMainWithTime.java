@@ -59,7 +59,7 @@ public class QuotationStreamMainWithTime {
             /**
              * 允许延迟3秒的数据进入
              */
-            private long delayAllowTimestamp = 30000L;
+            private long delayAllowTimestamp = 3000L;
 
             @Override
             public long extractTimestamp(Tuple5<Integer, String, Long, BigDecimal, BigDecimal> item, long previousElementTimestamp) {
