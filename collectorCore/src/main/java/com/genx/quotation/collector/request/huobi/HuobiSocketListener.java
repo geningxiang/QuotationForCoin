@@ -12,6 +12,7 @@ import okhttp3.WebSocket;
 import okio.ByteString;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class HuobiSocketListener implements ICaimaoSocketListener {
     /**
      * 火币的行情返回 有时会有id重复的数据返回  需要剔除这部分数据
      */
-    private Map<String, Long> idMap = new ConcurrentHashMap<>(512);
+    private Map<String, BigInteger> idMap = new ConcurrentHashMap<>(512);
 
     @Override
     public String collectorName() {
@@ -74,14 +75,14 @@ public class HuobiSocketListener implements ICaimaoSocketListener {
                 JSONArray d = ((JSONObject) data).getJSONObject("tick").getJSONArray("data");
                 TradeDetailMsg msg = new TradeDetailMsg(10004, symbol, d.size());
                 JSONObject item;
-                Long lastId = this.idMap.get(symbol);
+                BigInteger lastId = this.idMap.get(symbol);
                 System.out.println(data);
                 for (int i = 0; i < d.size(); i++) {
                     item = d.getJSONObject(i);
 
-                    long id = item.getLongValue("id");
-                    System.out.println((int)(item.getLongValue("ts") / 60000) * 60 + ',' + id);
-                    if(lastId != null && lastId >= id){
+                    BigInteger id = item.getBigInteger("id");
+                    System.out.println(((int)(item.getLongValue("ts") / 60000) * 60) + " , " + id);
+                    if(lastId != null && lastId.compareTo(id) > 0){
                         System.out.println("【忽略】" + id);
                         //忽略
                         continue;

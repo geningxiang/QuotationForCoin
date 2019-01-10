@@ -13,7 +13,7 @@ public class SimpleKafkaConsumer {
 
     public SimpleKafkaConsumer() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "192.168.1.111:9092");
+        props.put("bootstrap.servers", "192.168.1.190:9092");
         //每个消费者分配独立的组号
         props.put("group.id", "test1");
         //如果value合法，则自动提交偏移量

@@ -99,6 +99,12 @@
             <version>2.6</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.genx.quotation</groupId>
+            <artifactId>collector-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

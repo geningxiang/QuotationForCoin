@@ -35,6 +35,8 @@
         <logger name="com.alibaba.druid" level="warn"/>
         <logger name="org.apache.kafka" level="warn"/>
         <logger name="org.apache.flink" level="warn"/>
+        <logger name="com.mongodb" level="warn"/>
+        <logger name="org.mongodb" level="warn"/>
 
         <!--建立一个默认的root的logger-->
         <Root level="debug">

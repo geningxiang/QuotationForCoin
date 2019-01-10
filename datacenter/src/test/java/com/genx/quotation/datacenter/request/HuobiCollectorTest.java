@@ -43,7 +43,7 @@ public class HuobiCollectorTest {
     public static void main(String[] args) throws FileNotFoundException, InterruptedException, ScriptException {
 
         Properties props = new Properties();
-        props.put("bootstrap.servers", "192.168.1.111:9092");
+        props.put("bootstrap.servers", "192.168.1.190:9092");
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);
