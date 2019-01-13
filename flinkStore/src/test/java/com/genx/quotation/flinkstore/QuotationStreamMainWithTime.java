@@ -1,9 +1,11 @@
 package com.genx.quotation.flinkstore;
 
+import com.genx.quotation.flinkstore.sink.MongoDbSink;
 import com.genx.quotation.flinkstore.transform.QuotationTradeTansformer;
 import com.genx.quotation.flinkstore.vo.QuotationKlineItem;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple5;
@@ -17,11 +19,13 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.triggers.EventTimeTrigger;
 import org.apache.flink.streaming.api.windowing.triggers.Trigger;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Properties;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,13 +41,23 @@ public class QuotationStreamMainWithTime {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
 
-        env.enableCheckpointing(5000); // 非常关键，一定要设置启动检查点！！
+        env.enableCheckpointing(60000); // 非常关键，一定要设置启动检查点！！
 
         //以 eventTime 为基准
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         //从kafka 获取数据流
-        DataStreamSource<String> stream = env.readTextFile("D:/work/2.txt");
+//        DataStreamSource<String> stream = env.readTextFile("D:/work/2.txt");
+
+        Properties properties = new Properties();
+        properties.setProperty("bootstrap.servers", "192.168.1.190:9092");
+        // only required for Kafka 0.8
+        //properties.setProperty("zookeeper.connect", "localhost:2181");
+        properties.setProperty("group.id", "test1");
+
+        //从kafka 获取数据流
+        DataStreamSource<String> stream = env.addSource(new FlinkKafkaConsumer("coin.quotation.trade.detail", new SimpleStringSchema(), properties));
+
 
 
         // 将String 转成 元组
@@ -59,13 +73,14 @@ public class QuotationStreamMainWithTime {
             /**
              * 允许延迟3秒的数据进入
              */
-            private long delayAllowTimestamp = 3000L;
+            private long delayAllowTimestamp = 1000L;
 
             @Override
             public long extractTimestamp(Tuple5<Integer, String, Long, BigDecimal, BigDecimal> item, long previousElementTimestamp) {
                 if(item.f2 > currentMaxTimestamp) {
                     currentMaxTimestamp = item.f2;
                 }
+//                System.out.println("【extractTimestamp】"+currentMaxTimestamp);
                 return item.f2;
             }
 
@@ -73,6 +88,7 @@ public class QuotationStreamMainWithTime {
             @Override
             public Watermark getCurrentWatermark() {
                 //return the watermark as current highest timestamp minus the out-of-orderness bound
+//                System.out.println("【getCurrentWatermark】"+currentMaxTimestamp);
                 return new Watermark(currentMaxTimestamp - delayAllowTimestamp);
 //                return null;
             }
@@ -80,7 +96,8 @@ public class QuotationStreamMainWithTime {
 
 
         //扩展WindowAssigner类来实现自定义窗口分配器
-        WindowedStream<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>, Tuple, TimeWindow> windowedStream = keyedStream.timeWindow(Time.minutes(1L));
+        WindowedStream<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>, Tuple, TimeWindow> windowedStream = keyedStream.timeWindow(Time.minutes(1L));//.allowedLateness(Time.seconds(3));
+
 
         SingleOutputStreamOperator<QuotationKlineItem> result = windowedStream.aggregate(new AggregateFunction<Tuple5<Integer, String, Long, BigDecimal, BigDecimal>, QuotationKlineItem, QuotationKlineItem>(){
             /**
@@ -124,8 +141,9 @@ public class QuotationStreamMainWithTime {
             }
         });
 
+//        result.print();
+        result.addSink(new MongoDbSink());
 
-        result.print();
 
         // run the prediction pipeline
         env.execute("QuotationStreamMain");

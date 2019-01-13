@@ -46,7 +46,7 @@ public class HuobiSocketListener implements ICaimaoSocketListener {
     public void onOpen(WebSocket webSocket, Response response) {
         webSocket.send("{\"sub\": \"market.btcusdt.trade.detail\"}");
         webSocket.send("{\"sub\": \"market.ethusdt.trade.detail\"}");
-//        webSocket.send("{\"sub\": \"market.xrpusdt.trade.detail\"}");
+        webSocket.send("{\"sub\": \"market.xrpusdt.trade.detail\"}");
     }
 
     @Override

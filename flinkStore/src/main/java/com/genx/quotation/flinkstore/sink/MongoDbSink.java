@@ -10,6 +10,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
@@ -39,10 +40,10 @@ public class MongoDbSink extends RichSinkFunction<QuotationKlineItem> {
     @Override
     public void invoke(QuotationKlineItem value, SinkFunction.Context context) {
         String id = value.getExchangeCode() + "_" + value.getSymbol() + "_" + value.getMinute();
-
         Document document = new Document("$set", new Document("exchangeCode", value.getExchangeCode())
                 .append("symbol", value.getSymbol())
                 .append("minute", value.getMinute())
+                .append("time", FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(value.getMinute() * 60000L))
                 .append("open", value.getOpen())
                 .append("close", value.getClose())
                 .append("low", value.getLow())
@@ -56,7 +57,7 @@ public class MongoDbSink extends RichSinkFunction<QuotationKlineItem> {
 
     @Override
     public void open(Configuration config) {
-        ServerAddress serverAddress = new ServerAddress("192.168.1.126", 27017);
+        ServerAddress serverAddress = new ServerAddress("localhost", 27017);
         List<ServerAddress> addressList = new ArrayList<ServerAddress>();
         addressList.add(serverAddress);
         // 认证信息（三个参数分别为：用户名、数据库名称、密码）
